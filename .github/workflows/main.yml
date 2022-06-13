@@ -1,0 +1,26 @@
+name: test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  USERNAME: ${{ secrets.ALIYUN_USERNAME }}
+  PASSWORD: ${{ secrets.ALIYUN_PASSWORD }}
+  KUBESPRAY_VERSION: v2.19.0
+  
+jobs:
+  kubespray:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: generate lists
+      run: |
+        wget https://github.com/kubernetes-sigs/kubespray/archive/refs/tags/${KUBESPRAY_VERSION}.tar.gz
+        tar -zxf ${KUBESPRAY_VERSION}.tar.gz 
+        mv kubespray-* kubespray
+        sudo docker run -t --rm --name kubespray -v ${PWD}/kubespray:/kubespray quay.io/kubespray/kubespray:${KUBESPRAY_VERSION} "bash /kubespray/contrib/offline/generate_list.sh"
